@@ -6,6 +6,7 @@ using AutoMapper;
 using Core.Entities.Identity;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -44,8 +45,12 @@ namespace API.Controllers
         }
 
         [HttpGet("email-exists")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<bool>> CheckEmailExists([FromQuery] string email)
         {
+            if (string.IsNullOrEmpty(email)) return BadRequest(new ApiResponse(400, "Please enter an email address"));
+            
             return await _userManager.FindByEmailAsync(email) != null;
         }
 
@@ -94,6 +99,14 @@ namespace API.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
+            if (CheckEmailExists(registerDto.Email).Result.Value)
+            {
+                return new BadRequestObjectResult(new ApiValidationErrorResponse
+                {
+                    Errors = new[] {"Email address is in use"}
+                });
+            }
+
             var user = new AppUser
             {
                 DisplayName = registerDto.DisplayName,
