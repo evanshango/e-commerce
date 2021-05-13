@@ -22,7 +22,6 @@ namespace Infrastructure.Data
                 .Include(p => p.ProductBrand)
                 .ToListAsync();
         }
-
         
         public async Task<Product> GetProductByIdAsync(int id)
         {
