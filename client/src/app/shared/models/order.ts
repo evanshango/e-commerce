@@ -15,6 +15,7 @@ export interface IOrderItem {
 }
 
 export interface IOrder {
+  id: number;
   buyerEmail: string;
   orderDate: Date;
   shipToAddress: IAddress;
