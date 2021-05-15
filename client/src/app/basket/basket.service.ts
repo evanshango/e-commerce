@@ -5,6 +5,7 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {Basket, IBasket, IBasketItem, IBasketTotals} from '../shared/models/basket';
 import {map} from 'rxjs/operators';
 import {IProduct} from '../shared/models/product';
+import {IDeliveryMethod} from '../shared/models/deliveryMethod';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class BasketService {
   private basketTotalSource = new BehaviorSubject<IBasketTotals>(null);
   basket$ = this.basketSource.asObservable();
   basketTotal$ = this.basketTotalSource.asObservable();
+  shipping = 0;
 
   constructor(private http: HttpClient) {
   }
@@ -51,10 +53,15 @@ export class BasketService {
 
   private calculateTotals(): void {
     const basket = this.getCurrentBasketValue();
-    const shipping = 0;
+    const shipping = this.shipping;
     const subtotal = basket.items.reduce((a: number, b: IBasketItem) => (b.price * b.quantity) + a, 0);
     const total = subtotal + shipping;
     this.basketTotalSource.next({shipping, subtotal, total});
+  }
+
+  setShippingPrice(deliverMethod: IDeliveryMethod): void{
+    this.shipping = deliverMethod.price;
+    this.calculateTotals();
   }
 
   getBasket(id: string): Observable<void> {
@@ -116,10 +123,16 @@ export class BasketService {
     }
   }
 
+  deleteLocalBasket(id: string): void{
+    this.basketSource.next(null);
+    this.basketTotalSource.next(null);
+    localStorage.removeItem('basket_id');
+  }
+
   private deleteBasket(basket: IBasket): Subscription {
     return this.http.delete(`${this.baseUrl}basket?id=${basket.id}`).subscribe(() => {
       this.basketSource.next(null);
-      this.basketSource.next(null);
+      this.basketTotalSource.next(null);
       localStorage.removeItem('basket_id');
     }, error => {
       console.log(error);
