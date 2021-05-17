@@ -34,7 +34,6 @@ export class BasketService {
   }
 
   private static addOrUpdateItem(items: IBasketItem[], itemToAdd: IBasketItem, quantity: number): IBasketItem[] {
-    console.log(items);
     const index = items.findIndex(i => i.id === itemToAdd.id);
     if (index === -1) {
       itemToAdd.quantity = quantity;
@@ -59,15 +58,20 @@ export class BasketService {
     this.basketTotalSource.next({shipping, subtotal, total});
   }
 
-  setShippingPrice(deliverMethod: IDeliveryMethod): void{
+  setShippingPrice(deliverMethod: IDeliveryMethod): void {
     this.shipping = deliverMethod.price;
+    const basket = this.getCurrentBasketValue();
+    basket.deliveryMethodId = deliverMethod.id;
+    basket.shippingPrice = deliverMethod.price;
     this.calculateTotals();
+    this.setBasket(basket);
   }
 
   getBasket(id: string): Observable<void> {
     return this.http.get(`${this.baseUrl}basket?id=${id}`).pipe(
       map((basket: IBasket) => {
         this.basketSource.next(basket);
+        this.shipping = basket.shippingPrice;
         this.calculateTotals();
       })
     );
@@ -123,13 +127,13 @@ export class BasketService {
     }
   }
 
-  deleteLocalBasket(id: string): void{
+  deleteLocalBasket(): void {
     this.basketSource.next(null);
     this.basketTotalSource.next(null);
     localStorage.removeItem('basket_id');
   }
 
-  private deleteBasket(basket: IBasket): Subscription {
+  deleteBasket(basket: IBasket): Subscription {
     return this.http.delete(`${this.baseUrl}basket?id=${basket.id}`).subscribe(() => {
       this.basketSource.next(null);
       this.basketTotalSource.next(null);
@@ -137,5 +141,13 @@ export class BasketService {
     }, error => {
       console.log(error);
     });
+  }
+
+  createPaymentIntent(): Observable<any>{
+    return this.http.post(`${this.baseUrl}payments/${this.getCurrentBasketValue().id}`, {}).pipe(
+      map((basket: IBasket) => {
+        this.basketSource.next(basket);
+      })
+    );
   }
 }
