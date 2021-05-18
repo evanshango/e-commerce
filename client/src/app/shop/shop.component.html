@@ -4,7 +4,7 @@
       <ng-container *ngIf="types && brands">
         <h5 class="text-warning mt-4">Sort</h5>
         <select name="sort" class="custom-select mb-3 mt-2" (change)="onSortSelected($any($event.currentTarget).value)">
-          <option *ngFor="let sort of sortOptions" [value]="sort.value">
+          <option *ngFor="let sort of sortOptions" [value]="sort.value" [selected]="shopParams.sort === sort.value">
             {{sort.name}}
           </option>
         </select>
@@ -42,7 +42,8 @@
         </div>
       </div>
       <div class="d-flex justify-content-center" *ngIf="totalCount > 0">
-        <app-pager [pageSize]="shopParams.pageSize" [totalCount]="totalCount" (pageChanged)="onPageChanged($event)">
+        <app-pager [pageSize]="shopParams.pageSize" [totalCount]="totalCount" (pageChanged)="onPageChanged($event)"
+                   [pageNumber]="shopParams.pageNumber">
         </app-pager>
       </div>
     </section>

@@ -1,3 +1,24 @@
+.list-group{
+  border: 1px solid #dcdcdc;
+}
 .list-group-item{
   cursor: pointer;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1.1em;
+  margin-bottom: 2px;
+
+  &:focus{
+    outline: none;
+  }
+
+  &.active{
+    border-radius: 2px;
+  }
+
+  &:not(.active):hover{
+    color: #ffffff;
+    background-color: rgba(233, 86, 32, .705);
+    border-radius: 2px;
+  }
 }
